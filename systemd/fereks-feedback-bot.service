@@ -1,0 +1,28 @@
+[Unit]
+Description=Fereks Feedback Bot
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/fereks_feedback_bot
+Environment=PATH=/opt/fereks_feedback_bot/venv/bin
+ExecStart=/opt/fereks_feedback_bot/venv/bin/python main.py
+Restart=always
+RestartSec=10
+
+# Переменные окружения (можно также использовать EnvironmentFile)
+Environment=BOT_TOKEN=your_bot_token_here
+Environment=ADMIN_IDS=123456789,987654321
+Environment=DATABASE_PATH=/opt/fereks_feedback_bot/data/feedback.db
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=fereks-feedback-bot
+
+[Install]
+WantedBy=multi-user.target
+

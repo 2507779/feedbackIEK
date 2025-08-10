@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  fereks-feedback-bot:
+    build: .
+    container_name: fereks_feedback_bot
+    restart: unless-stopped
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - ADMIN_IDS=${ADMIN_IDS}
+      - DATABASE_PATH=/app/data/feedback.db
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - fereks_network
+
+networks:
+  fereks_network:
+    driver: bridge
+
