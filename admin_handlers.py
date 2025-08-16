@@ -121,12 +121,9 @@ async def show_feedback_list(callback: CallbackQuery, db: Database, status: str,
     for feedback in feedback_list:
         feedback_type = FEEDBACK_TYPES.get(feedback['feedback_type'], feedback['feedback_type'])
         
-        if feedback['is_anonymous']:
-            sender = "Анонимно"
-        else:
-            sender = f"{feedback['first_name'] or ''} {feedback['last_name'] or ''}".strip()
-            if feedback['username']:
-                sender += f" (@{feedback['username']})"
+        sender = f"{feedback['first_name'] or ''} {feedback['last_name'] or ''}".strip()
+        if feedback['username']:
+            sender += f" (@{feedback['username']})"
         
         text += f"<b>#{feedback['id']}</b> - {feedback_type}\n"
         text += f"📂 {feedback['category']}\n"

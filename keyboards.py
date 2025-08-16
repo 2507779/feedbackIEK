@@ -49,16 +49,7 @@ def get_category_keyboard():
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
     return keyboard
 
-def get_anonymous_keyboard():
-    """Клавиатура выбора анонимности"""
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="👤 Подписать", callback_data="anon_no")],
-            [InlineKeyboardButton(text="🕶 Анонимно", callback_data="anon_yes")],
-            [InlineKeyboardButton(text="❌ Отмена", callback_data="cancel")]
-        ]
-    )
-    return keyboard
+
 
 def get_confirmation_keyboard():
     """Клавиатура подтверждения отправки"""

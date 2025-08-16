@@ -17,7 +17,6 @@ class FeedbackStates(StatesGroup):
     waiting_for_type = State()
     waiting_for_category = State()
     waiting_for_message = State()
-    waiting_for_anonymous = State()
     waiting_for_confirmation = State()
     waiting_for_admin_response = State()
 
@@ -109,35 +108,22 @@ async def process_message(message: Message, state: FSMContext):
         return
     
     await state.update_data(message_text=message.text)
-    
-    await message.answer(
-        "Как вы хотите отправить сообщение?",
-        reply_markup=get_anonymous_keyboard()
-    )
-    await state.set_state(FeedbackStates.waiting_for_anonymous)
-
-@router.callback_query(F.data.startswith("anon_"))
-async def process_anonymous(callback: CallbackQuery, state: FSMContext):
-    """Обработка выбора анонимности"""
-    is_anonymous = callback.data.split("_")[1] == "yes"
-    
-    await state.update_data(is_anonymous=is_anonymous)
+    await state.update_data(is_anonymous=False) # Всегда неанонимно
     
     # Получаем все данные для подтверждения
     data = await state.get_data()
-    user = callback.from_user
+    user = message.from_user
     
-    feedback_type_text = FEEDBACK_TYPES[data['feedback_type']]
-    category = data['category']
-    message_text = data['message_text']
-    anonymous_text = "Анонимно" if is_anonymous else f"От: {user.first_name or user.username}"
+    feedback_type_text = FEEDBACK_TYPES[data["feedback_type"]]
+    category = data["category"]
+    message_text = data["message_text"]
     
     confirmation_text = f"""
 <b>Подтверждение отправки</b>
 
 <b>Тип:</b> {feedback_type_text}
 <b>Категория:</b> {category}
-<b>Отправитель:</b> {anonymous_text}
+<b>Отправитель:</b> {user.first_name or user.username}
 
 <b>Сообщение:</b>
 {html.escape(message_text)}
@@ -145,7 +131,7 @@ async def process_anonymous(callback: CallbackQuery, state: FSMContext):
 Всё верно?
 """
     
-    await callback.message.edit_text(
+    await message.answer(
         confirmation_text,
         reply_markup=get_confirmation_keyboard(),
         parse_mode="HTML"
@@ -174,12 +160,9 @@ async def confirm_send(callback: CallbackQuery, state: FSMContext, db: Database)
     feedback_type_text = FEEDBACK_TYPES[data['feedback_type']]
     tag = f"[{feedback_type_text}]"
     
-    if data['is_anonymous']:
-        sender_info = "Анонимный пользователь"
-    else:
-        sender_info = f"{user.first_name or ''} {user.last_name or ''}".strip()
-        if user.username:
-            sender_info += f" (@{user.username})"
+    sender_info = f"{user.first_name or ''} {user.last_name or ''}".strip()
+    if user.username:
+        sender_info += f" (@{user.username})"
     
     admin_message = f"""
 🔔 <b>Новая заявка #{feedback_id}</b>
